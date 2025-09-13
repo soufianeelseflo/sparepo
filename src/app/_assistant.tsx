@@ -2,20 +2,21 @@
 
 import { useEffect } from "react";
 
-// Choose "left" (default, avoids Windows watermark) or "right"
-const POS: "left" | "right" = (process.env.NEXT_PUBLIC_FLOAT_POS as any) || "left";
+// Bottom-left by default (safer with Windows watermark). To use right corner:
+// add NEXT_PUBLIC_FLOAT_POS=right to your .env.local and restart.
+const POS: "left" | "right" =
+    ((process as any).env?.NEXT_PUBLIC_FLOAT_POS as "left" | "right") || "left";
 
-// tiny helper to set inline styles (avoids class collisions)
 function css(el: HTMLElement, styles: Record<string, string | number>) {
     Object.assign(el.style, styles);
 }
 
-export default function Inject() {
+export default function Assistant() {
     useEffect(() => {
-        // already present?
+        // Prevent double mount
         if (document.getElementById("a_fab")) return;
 
-        // keyframes (glow/slide) injected once
+        // Keyframes (glow/slide)
         if (!document.getElementById("a_kf")) {
             const s = document.createElement("style");
             s.id = "a_kf";
@@ -26,7 +27,7 @@ export default function Inject() {
             document.head.appendChild(s);
         }
 
-        // Floating button (neutral id, no trigger words)
+        // Floating button (neutral id; max z-index; inline styles)
         const fab = document.createElement("div");
         fab.id = "a_fab";
         fab.setAttribute("role", "button");
@@ -90,9 +91,9 @@ export default function Inject() {
         list.id = "a_list";
         css(list, { maxHeight: "320px", overflow: "auto", padding: "16px" });
 
-        const footer = document.createElement("form");
-        footer.id = "a_form";
-        css(footer, { display: "flex", gap: "8px", padding: "12px", borderTop: "1px solid #e5e7eb" });
+        const form = document.createElement("form");
+        form.id = "a_form";
+        css(form, { display: "flex", gap: "8px", padding: "12px", borderTop: "1px solid #e5e7eb" });
 
         const input = document.createElement("input");
         input.id = "a_input";
@@ -109,7 +110,6 @@ export default function Inject() {
         foot.textContent = "Powered by OpenRouter";
         css(foot, { padding: "0 16px 12px 16px", fontSize: "11px", color: "#6b7280" });
 
-        // helper: add a bubble
         function bubble(role: "u" | "a", text: string) {
             const b = document.createElement("div");
             css(b, {
@@ -124,23 +124,8 @@ export default function Inject() {
         // seed greeting
         bubble("a", "Hi! Ask about services, pricing, or booking times.");
 
-        footer.append(input, send);
-        panel.append(header, list, footer, foot);
-
-        // open/close
-        const open = () => { panel.style.display = "block"; setTimeout(() => list.scrollTo({ top: list.scrollHeight, behavior: "smooth" }), 0); };
-        const close = () => { panel.style.display = "none"; };
-
-        fab.addEventListener("click", open);
-        header.querySelector<HTMLButtonElement>("#a_close")!.addEventListener("click", close);
-
-        // keyboard toggle: Alt+K
-        const onKey = (e: KeyboardEvent) => { if (e.altKey && e.key.toLowerCase() === "k") (panel.style.display === "none" ? open() : close()); };
-        window.addEventListener("keydown", onKey);
-
-        // send
-        footer.addEventListener("submit", async (ev) => {
-            ev.preventDefault();
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
             const val = input.value.trim();
             if (!val) return;
             input.disabled = true; send.disabled = true; send.style.background = "#9ca3af"; send.style.cursor = "not-allowed";
@@ -161,7 +146,20 @@ export default function Inject() {
             }
         });
 
+        // open/close
+        const open = () => { panel.style.display = "block"; setTimeout(() => list.scrollTo({ top: list.scrollHeight, behavior: "smooth" }), 0); };
+        const close = () => { panel.style.display = "none"; };
+
+        fab.addEventListener("click", open);
+        header.querySelector<HTMLButtonElement>("#a_close")!.addEventListener("click", close);
+
+        // keyboard toggle Alt+K
+        const onKey = (e: KeyboardEvent) => { if (e.altKey && e.key.toLowerCase() === "k") (panel.style.display === "none" ? open() : close()); };
+        window.addEventListener("keydown", onKey);
+
         // mount
+        form.append(input, send);
+        panel.append(header, list, form, foot);
         document.body.append(fab, panel);
 
         // cleanup
