@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// POSITION: "left" (default) or "right"
-const POS: "left" | "right" = "right"; // change to "right" if you prefer
+// POSITION: "right" to put it in the bottom-right white gutter outside the grid
+const POS: "left" | "right" = "right";
 const Z = 2147483647;
 const BRAND = "rgb(42,126,166)"; // brand-600
 
@@ -16,7 +16,7 @@ export default function Widget() {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Add local keyframes so glow always works (no Tailwind dependency)
+  // Local keyframes — survive Tailwind/CSS quirks
   useEffect(() => {
     if (document.getElementById("a_kf")) return;
     const s = document.createElement("style");
@@ -25,7 +25,6 @@ export default function Widget() {
     document.head.appendChild(s);
   }, []);
 
-  // Keep scroll at bottom
   useEffect(() => {
     if (open) listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
@@ -61,7 +60,7 @@ export default function Widget() {
 
   return (
     <>
-      {/* Floating bubble — no "chat/assistant" keywords; max z-index; inline styles */}
+      {/* Floating bubble — bottom-right, outside layout */}
       <button
         aria-label="Open"
         title="Open (Alt+K)"

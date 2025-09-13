@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const key = process.env.OPENROUTER_API_KEY;
   const base = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-  const model = process.env.OPENROUTER_MODEL || "nvidia/nemotron-nano-9b-v2:free";
+  const model = process.env.OPENROUTER_MODEL || "openrouter/sonoma-dusk-alpha";
   if (!key) {
     return new Response(JSON.stringify({ error: "Server not configured: OPENROUTER_API_KEY missing" }), { status: 500 });
   }
