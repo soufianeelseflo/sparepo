@@ -1,0 +1,12 @@
+import type { MetadataRoute } from "next";
+export default function sitemap(): MetadataRoute.Sitemap {
+  const base = process.env.APP_URL || "http://localhost:3000";
+  const routes = ["", "/services", "/pricing", "/about", "/contact", "/privacy", "/tos"];
+  const now = new Date().toISOString();
+  return routes.map((r) => ({
+    url: `${base}${r || "/"}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: r === "" ? 1 : 0.7
+  }));
+}
